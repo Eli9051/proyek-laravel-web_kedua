@@ -1,34 +1,47 @@
-<aside class="w-64 min-h-screen bg-white border-r border-gray-100 hidden md:block fixed">
-    <div class="p-6">
-        <img src="public\images\logo-perusahaan.png" class="w-16 h-16 object-contain mb-6 drop-shadow-md">
+<nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+    {{-- 1. DASHBOARD UTAMA (Berlaku untuk semua role) --}}
+    <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-3 {{ request()->routeIs('dashboard') ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-gray-500 hover:bg-gray-50' }} rounded-2xl transition-all">
+        <span>🏠</span> Dashboard Utama
+    </a>
 
-        <nav class="space-y-2">
-            <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                🏠 Dashboard
-            </x-nav-link>
+    {{-- 2. MENU KHUSUS KARYAWAN --}}
+    @if(Auth::user()->role == 'karyawan')
+        <div class="pt-4 pb-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest px-4">Menu Saya</div>
+        
+        <a href="{{ route('cuti.ajukan') }}" class="flex items-center gap-4 p-4 {{ request()->routeIs('cuti.ajukan') ? 'bg-[#4318FF] text-white font-bold' : 'text-[#A3AED0] hover:bg-white/5' }} rounded-2xl transition-all">
+            <span class="text-xl">📝</span>
+            <span x-show="sidebarOpen">Ajukan Cuti</span>
+        </a>
 
-            @if(Auth::user()->role == 'hr')
-                <div class="pt-4 pb-2 text-xs font-semibold text-gray-400 uppercase">Menu HRD</div>
-                <x-nav-link href="#">👥 Kelola Karyawan</x-nav-link>
-                <x-nav-link href="#">📊 Prediksi Resign AI</x-nav-link>
-                <x-nav-link href="#">📅 Persetujuan Cuti</x-nav-link>
-            @endif
+        <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-2xl font-medium transition-all">
+            <span>💰</span> Slip Gaji
+        </a>
+    @endif
 
-            @if(Auth::user()->role == 'karyawan')
-                <div class="pt-4 pb-2 text-xs font-semibold text-gray-400 uppercase">Menu Saya</div>
-                <x-nav-link href="#">⏰ Absensi Online</x-nav-link>
-                <x-nav-link href="#">📝 Ajukan Cuti</x-nav-link>
-                <x-nav-link href="#">💰 Slip Gaji</x-nav-link>
-            @endif
-        </nav>
+    {{-- 3. MENU KHUSUS HR --}}
+    @if(strtolower(Auth::user()->role) === 'hr')
+        <div class="pt-4 pb-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest px-4">Menu HR</div>
+        
+        {{-- Menu Manajemen Karyawan (Gaya Baru yang Disamakan) --}}
+        <a href="{{ route('hr.employees.index') }}" class="flex items-center gap-4 p-4 {{ request()->routeIs('hr.employees.*') ? 'bg-[#4318FF] text-white font-bold' : 'text-[#A3AED0] hover:bg-white/5' }} rounded-2xl transition-all">
+            <span class="text-xl">👥</span>
+            <span>Manajemen Karyawan</span>
+        </a>
+
+        {{-- Menu Persetujuan Cuti --}}
+        <a href="{{ route('leaves.index') }}" class="flex items-center gap-4 p-4 {{ request()->routeIs('leaves.index') ? 'bg-[#4318FF] text-white font-bold' : 'text-[#A3AED0] hover:bg-white/5' }} rounded-2xl transition-all">
+            <span class="text-xl">📋</span>
+            <span>Persetujuan Cuti</span>
+        </a>
+    @endif
+
+    {{-- 4. LOGOUT --}}
+    <div class="pt-10">
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-2xl font-bold transition-all">
+                <span>🚪</span> Logout
+            </button>
+        </form>
     </div>
-</aside>
-
-<div class="absolute bottom-0 w-full p-6 border-t border-gray-100 bg-gray-50/50">
-    <form method="POST" action="{{ route('logout') }}">
-        @csrf <button type="submit" class="flex items-center gap-3 text-red-500 font-bold hover:text-red-700 transition-colors w-full group">
-            <span class="text-xl group-hover:scale-110 transition-transform">🚪</span>
-            <span>Keluar Sistem</span>
-        </button>
-    </form>
-</div>
+</nav>

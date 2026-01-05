@@ -18,7 +18,7 @@ return [
     |
     */
 
-    'driver' => env('SESSION_DRIVER', 'database'),
+    'driver' => 'file',
 
     /*
     |--------------------------------------------------------------------------
@@ -155,7 +155,7 @@ return [
     | domain without subdomains. Typically, this shouldn't be changed.
     |
     */
-
+    'same_site' => 'lax',
     'domain' => env('SESSION_DOMAIN'),
 
     /*
@@ -169,7 +169,7 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    'secure' => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -199,7 +199,7 @@ return [
     |
     */
 
-    'same_site' => env('SESSION_SAME_SITE', 'lax'),
+    'same_site' => 'lax',
 
     /*
     |--------------------------------------------------------------------------

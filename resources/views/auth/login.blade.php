@@ -1,15 +1,22 @@
 <x-guest-layout>
     <div class="fixed inset-0 min-h-screen w-full flex flex-col md:flex-row bg-white overflow-hidden">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .swiper-slide { background-position: center; background-size: cover; }
-    </style>
+        <style>
+            body { font-family: 'Plus Jakarta Sans', sans-serif; }
+            .swiper-slide { background-position: center; background-size: cover; }
+            
+            /* Perbaikan Autofill untuk Edge agar tidak menutupi desain */
+            input:-webkit-autofill,
+            input:-webkit-autofill:hover, 
+            input:-webkit-autofill:focus {
+                -webkit-box-shadow: 0 0 0px 1000px #f9fafb inset !important; /* warna bg-gray-50 */
+                -webkit-text-fill-color: #374151 !important;
+                transition: background-color 5000s ease-in-out 0s;
+            }
+        </style>
 
-    <div class="min-h-screen w-full flex flex-col md:flex-row bg-white overflow-hidden">
-        
         <div class="hidden md:block w-1/2 relative overflow-hidden">
             <div class="swiper mySwiper h-full w-full">
                 <div class="swiper-wrapper">
@@ -34,7 +41,7 @@
             </div>
         </div>
 
-        <div class="w-full md:w-1/2 flex items-center justify-center p-8 md:p-16 bg-gray-50">
+        <div class="w-full md:w-1/2 flex items-center justify-center p-8 md:p-16 bg-gray-50 overflow-y-auto">
             <div class="w-full max-w-md bg-white p-10 rounded-3xl shadow-2xl shadow-blue-100 border border-gray-100">
                 
                 <div class="text-center mb-8">
@@ -51,25 +58,29 @@
                 <form method="POST" action="{{ route('login') }}" class="space-y-5">
                     @csrf
 
-                    <div class="flex justify-center scale-90 origin-center">
-                        {!! NoCaptcha::display() !!}
-                    </div>
-                    @if ($errors->has('g-recaptcha-response'))
-                        <p class="text-red-500 text-xs text-center mt-1">{{ $errors->first('g-recaptcha-response') }}</p>
-                    @endif
-
                     <div>
-                        <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Alamat Email</label>
+                        <label for="email" class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Alamat Email</label>
                         <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus
+                            autocomplete="username"
                             class="block w-full mt-1 px-4 py-3 bg-gray-50 border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all duration-200">
                         <x-input-error :messages="$errors->get('email')" class="mt-2" />
                     </div>
 
                     <div>
-                        <label class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Kata Sandi</label>
+                        <label for="password" class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Kata Sandi</label>
                         <input id="password" type="password" name="password" required
+                            autocomplete="current-password"
                             class="block w-full mt-1 px-4 py-3 bg-gray-50 border-transparent rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all duration-200">
                         <x-input-error :messages="$errors->get('password')" class="mt-2" />
+                    </div>
+
+                    <div class="flex flex-col items-center justify-center py-2">
+                        <div class="scale-90 origin-center">
+                            {!! NoCaptcha::display() !!}
+                        </div>
+                        @if ($errors->has('g-recaptcha-response'))
+                            <p class="text-red-500 text-xs text-center mt-1">{{ $errors->first('g-recaptcha-response') }}</p>
+                        @endif
                     </div>
 
                     <div class="flex items-center justify-between">
@@ -77,8 +88,8 @@
                             <input type="checkbox" name="remember" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                             <span class="ms-2 text-sm text-gray-600">Ingat saya</span>
                         </label>
-                        @if (session('status') == 'locked')
-                            <a href="{{ route('password.request') }}" class="text-xs font-bold text-red-500 hover:underline">Akun Terkunci?</a>
+                        @if (Route::has('password.request'))
+                            <a href="{{ route('password.request') }}" class="text-xs font-bold text-blue-600 hover:underline">Lupa Sandi?</a>
                         @endif
                     </div>
 

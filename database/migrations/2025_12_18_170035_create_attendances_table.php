@@ -13,13 +13,11 @@ return new class extends Migration
     {
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained();
-            $table->date('date'); // Satu baris satu hari
-            $table->time('check_in')->nullable();
-            $table->time('check_out')->nullable();
-            $table->string('location_in')->nullable(); // Geotagging
-            $table->string('location_out')->nullable(); //
-            $table->enum('status', ['valid', 'jarak_jauh', 'pending_approval'])->default('valid');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Siapa yang absen 
+            $table->date('date'); // Tanggal hari ini 
+            $table->time('check_in')->nullable(); // Jam masuk 
+            $table->time('check_out')->nullable(); // Jam pulang 
+            $table->string('status', 20)->default('Hadir'); // Status kehadiran [cite: 45]
             $table->timestamps();
         });
     }

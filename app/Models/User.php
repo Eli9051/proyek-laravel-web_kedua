@@ -21,6 +21,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role', // <--- TAMBAHKAN INI!
+        'risk_score',
+        'risk_status',
     ];
 
     /**
@@ -44,5 +47,17 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // KABEL 1: Menghubungkan User ke Tabel Absen
+    public function attendances()
+    {
+        return $this->hasMany(\App\Models\Attendance::class);
+    }
+
+    // KABEL 2: Menghubungkan User ke Tabel Cuti
+    public function leaves()
+    {
+        return $this->hasMany(\App\Models\Leave::class);
     }
 }
