@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
 {
@@ -14,6 +13,6 @@ class EmployeeController extends Controller
 
 
         // ini kode untuk kirim atau kode pengiriman ke file blade 
-        return view('dashboard-hr-employees', compact('employees'))
+        return view('dashboard-hr-employees', compact('employees'));
     }
 }

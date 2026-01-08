@@ -87,49 +87,61 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{-- Mengambil data karyawan secara otomatis --}}
-                        @foreach(\App\Models\User::where('role', 'karyawan')->get() as $emp)
+                        @foreach($employees as $emp)
                         @php
-                        // Memanggil Service AI untuk hitung skor real
                         $ai = \App\Services\ResignationAIService::calculateRisk($emp);
                         @endphp
+
                         <tr class="border-b last:border-0 hover:bg-gray-50 transition-colors">
+                            {{-- 1. Nama Karyawan --}}
                             <td class="py-4 font-bold text-gray-700">
                                 <a href="{{ route('hr.employee.detail', $emp->id) }}" class="hover:text-blue-600 transition">
                                     {{ $emp->name }}
                                 </a>
                             </td>
+
+                            {{-- 2. Skor Resiko (Hanya satu kolom, rapi di tengah) --}}
                             <td class="py-4 text-center">
                                 <div class="text-lg font-black {{ $ai['score'] > 70 ? 'text-red-600' : 'text-green-600' }}">
                                     {{ $ai['score'] }}%
                                 </div>
                             </td>
+
+                            {{-- 3. Status --}}
                             <td class="py-4">
                                 <span class="px-3 py-1 rounded-full text-xs font-black uppercase
-                                    {{ $ai['score'] > 70 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">
+                            {{ $ai['score'] > 70 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">
                                     {{ $ai['score'] > 70 ? 'Bahaya' : 'Stabil' }}
                                 </span>
                             </td>
+
+                            {{-- 4. Rekomendasi --}}
                             <td class="py-4 text-sm text-gray-500 italic">
-                                {{ $ai['score'] > 70 ? '⚠️ Lakukan Wawancara Retensi' : '✅ Karyawan Stabil' }}
+                                {{ $ai['score'] > 70 ? 'Lakukan Wawancara Retensi' : 'Karyawan Stabil' }}
                             </td>
+
+                            {{-- 5. Aksi --}}
                             <td class="py-4 text-right">
-                                {{-- Tombol akan otomatis aktif jika skor di atas 40% (untuk testing) atau 70% (untuk real) --}}
                                 @if($ai['score'] > 40)
-                                <<form action="{{ route('hr.send.warning', $emp->id) }}" method="POST">
+                                <form action="{{ route('hr.send.warning', $emp->id) }}" method="POST">
                                     @csrf
                                     <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-bold hover:bg-red-700 transition shadow-lg">
                                         Kirim Peringatan
                                     </button>
-                                    </form>
-                                    @else
-                                    <span class="text-gray-300 text-xs font-bold italic">Kondisi Aman</span>
-                                    @endif
+                                </form>
+                                @else
+                                <span class="text-gray-300 text-xs font-bold italic">Kondisi Aman</span>
+                                @endif
                             </td>
                         </tr>
                         @endforeach
                     </tbody>
                 </table>
+
+                {{-- Pagination Links --}}
+                <div class="mt-6">
+                    {{ $employees->links() }}
+                </div>
             </div>
         </div>
     </div>

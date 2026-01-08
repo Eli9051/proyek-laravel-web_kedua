@@ -9,7 +9,9 @@ class EmployeeManagementController extends Controller
 {
     public function index()
     {
-        $employees = User::where('role', 'karyawan')->get();
+        // Mengambil data karyawan dengan batasan 10 data per halaman
+        $employees = User::where('role', 'karyawan')->paginate(10);
+
         return view('hr.employees.index', compact('employees'));
     }
 

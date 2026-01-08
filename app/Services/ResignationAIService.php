@@ -1,26 +1,49 @@
 <?php
+
 namespace App\Services;
 
-class ResignationAIService {
-    public static function calculateRisk($user) {
-        $score = 0;
+use App\Models\User;
+use App\Models\Attendance;
+use App\Models\RiskLog;
+
+class ResignationAIService
+{
+    /**
+     * Menghitung skor resiko resign berdasarkan absensi dan menyimpan lognya.
+     */
+    public static function calculateRisk(User $user)
+    {
+        $skor = 0;
         
-        // 1. Cek jumlah cuti (Data Lunak)
-        $jumlahCuti = $user->leaves()->count();
-        $score += ($jumlahCuti * 10); 
+        // Ambil data absensi bulan ini
+        $attendances = Attendance::where('user_id', $user->id)
+            ->whereMonth('date', now()->month)
+            ->get();
 
-        // 2. Cek keterlambatan (Data Keras)
-        // Kita asumsikan jika absen di atas jam 08:00
-        $lateCount = $user->attendances()->where('check_in', '>', '08:00:00')->count();
-        $score += ($lateCount * 15);
+        // Logika keterlambatan (Setiap telat > 08:00 tambah 10 poin)
+        $terlambat = $attendances->where('check_in', '>', '08:00:00')->count();
+        $skor += ($terlambat * 10);
 
-        // Batasi skor maksimal 100
-        $finalScore = min($score, 100);
+        // Pastikan skor maksimal 100
+        $skorFinal = min($skor, 100);
         
-        $status = 'Aman';
-        if ($finalScore > 70) $status = 'Bahaya';
-        elseif ($finalScore > 40) $status = 'Waspada';
+        // Tentukan status berdasarkan skor
+        $status = $skorFinal > 70 ? 'Tinggi' : ($skorFinal > 40 ? 'Sedang' : 'Rendah');
 
-        return ['score' => $finalScore, 'status' => $status];
+        // Simpan atau update ke database RiskLog
+        RiskLog::updateOrCreate(
+            ['user_id' => $user->id, 'period' => now()->format('F Y')],
+            [
+                'score' => $skorFinal, 
+                'status' => $status, 
+                'reason' => "Terlambat sebanyak $terlambat kali bulan ini"
+            ]
+        );
+
+        return [
+            'score' => $skorFinal,
+            'status' => $status,
+            'late_count' => $terlambat
+        ];
     }
 }

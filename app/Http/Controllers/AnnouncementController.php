@@ -1,50 +1,60 @@
 <?php
 
-// app/Http/Controllers/AttendanceController.php
-
 namespace App\Http\Controllers;
 
-use App\Models\Attendance; // Pastikan ini diimpor
+use App\Models\Announcement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class AttendanceController extends Controller
+class AnnouncementController extends Controller
 {
-    // Koordinat Kantor (Sesuaikan dengan koordinat kantor Anda)
-    const OFFICE_LAT = -6.200000; 
-    const OFFICE_LONG = 106.816666;
-    const MAX_RADIUS_KM = 0.1; // 100 Meter
-
-    public function checkIn(Request $request)
+    /**
+     * Menampilkan daftar pengumuman di sisi HR
+     */
+    public function index()
     {
-        $userLat = $request->lat;
-        $userLong = $request->long;
+        // Mengambil semua pengumuman, urutkan dari yang terbaru
+        $announcements = Announcement::latest()->paginate(10);
+        
+        return view('hr.announcements.index', compact('announcements'));
+    }
 
-        // Rumus Haversine
-        $earthRadius = 6371;
-        $dLat = deg2rad($userLat - self::OFFICE_LAT);
-        $dLon = deg2rad($userLong - self::OFFICE_LONG);
-        $a = sin($dLat/2) * sin($dLat/2) + cos(deg2rad(self::OFFICE_LAT)) * cos(deg2rad($userLat)) * sin($dLon/2) * sin($dLon/2);
-        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
-        $distance = $earthRadius * $c;
+    /**
+     * Menampilkan form tambah pengumuman
+     */
+    public function create()
+    {
+        return view('hr.announcements.create');
+    }
 
-        $isOutside = $distance > self::MAX_RADIUS_KM;
-
-        // Simpan Data
-        Attendance::create([
-            'user_id' => Auth::id(),
-            'date' => now()->toDateString(),
-            'check_in' => now()->toTimeString(),
-            'latitude' => $userLat,
-            'longitude' => $userLong,
-            'is_outside' => $isOutside,
-            'status' => $isOutside ? 'Luar Kantor' : 'Hadir'
+    /**
+     * Menyimpan pengumuman baru ke database
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'required',
+            'type' => 'required|in:info,warning,danger',
         ]);
 
-        $message = $isOutside 
-            ? 'Absen berhasil, namun Anda berada di luar jangkauan kantor. HRD telah dinotifikasi.' 
-            : 'Berhasil! Lokasi Anda tervalidasi di area kantor.';
+        Announcement::create([
+            'title' => $request->title,
+            'content' => $request->content,
+            'type' => $request->type,
+            'user_id' => Auth::id(), // HR yang membuat
+        ]);
 
-        return back()->with($isOutside ? 'warning' : 'success', $message);
+        return redirect()->route('hr.announcements.index')
+                         ->with('success', 'Pengumuman berhasil diterbitkan!');
     }
-} // Pastikan penutup ini ada di baris 47
+
+    /**
+     * Menghapus pengumuman
+     */
+    public function destroy(Announcement $announcement)
+    {
+        $announcement->delete();
+        return back()->with('success', 'Pengumuman berhasil dihapus.');
+    }
+}
