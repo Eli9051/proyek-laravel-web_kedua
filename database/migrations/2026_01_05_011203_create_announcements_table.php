@@ -17,6 +17,7 @@ return new class extends Migration
             $table->text('message');
             $table->enum('type', ['info', 'warning', 'urgent'])->default('info');
             $table->boolean('is_active')->default(true);
+            $table->text('content');
             $table->timestamps();
         });
     }
