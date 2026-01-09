@@ -49,7 +49,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-extrabold text-gray-800 flex items-center gap-3">
-                        Pusat Analisis HR 🏢
+                        Pusat Analisis HR 
                     </h1>
                     <p class="text-gray-500 mt-1 font-medium">
                         Memantau kesehatan organisasi dengan teknologi AI Heuristic secara real-time.
@@ -61,7 +61,7 @@
         {{-- 3. GRAFIK TREN RESIKO (Dinamis dari Database) --}}
         <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 mb-8">
             <div class="flex items-center gap-2 mb-6">
-                <span class="text-xl">📈</span>
+                <span class="text-xl"></span>
                 <h3 class="text-xl font-black text-gray-800">Tren Resiko Resign Organisasi</h3>
             </div>
             <div style="height: 300px; position: relative;">
@@ -72,7 +72,7 @@
         {{-- 4. TABEL PREDIKSI AI & TOMBOL PERINGATAN --}}
         <div class="bg-white p-8 rounded-3xl shadow-sm border border-red-100">
             <h3 class="text-xl font-black text-gray-800 mb-6 flex items-center gap-2">
-                <span class="text-2xl">🤖</span> Prediksi Resiko Resign (AI Heuristic)
+                <span class="text-2xl"></span> Prediksi Resiko Resign (AI Heuristic)
             </h3>
 
             <div class="overflow-x-auto">
