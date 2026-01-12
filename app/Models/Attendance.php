@@ -16,7 +16,8 @@ class Attendance extends Model
         'latitude', // Tambahkan ini
         'longitude', // Tambahkan ini
         'is_outside', // Tambahkan ini
-        'status'
+        'status',
+        'hr_reviewed',
     ];
 
     // Tambahkan juga hubungan ke User agar Eli bisa dikenali

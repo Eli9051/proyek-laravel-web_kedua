@@ -2,34 +2,38 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
         'name',
         'email',
         'password',
-        'role', // <--- TAMBAHKAN INI!
+        'role',
+        'status',
+        'basic_salary',
         'risk_score',
         'risk_status',
+        'kuota_cuti',
+        'has_warning',       // Tambahkan ini jika belum ada
+        'warning_message',   // Tambahkan ini jika belum ada
+        'hr_reviewed',
     ];
 
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -49,15 +53,27 @@ class User extends Authenticatable
         ];
     }
 
-    // KABEL 1: Menghubungkan User ke Tabel Absen
+    // Relasi ke Absen
     public function attendances()
     {
         return $this->hasMany(\App\Models\Attendance::class);
     }
 
-    // KABEL 2: Menghubungkan User ke Tabel Cuti
+    // Relasi ke Cuti
     public function leaves()
     {
         return $this->hasMany(\App\Models\Leave::class);
+    }
+
+    // Relasi ke Lembur (Overtime)
+    public function overtimes()
+    {
+        return $this->hasMany(\App\Models\Overtime::class);
+    }
+
+    // Relasi ke Inventaris
+    public function inventories()
+    {
+        return $this->hasMany(\App\Models\Inventory::class);
     }
 }

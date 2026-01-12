@@ -14,11 +14,27 @@
             </div>
             @endif
 
-            @if(session('error'))
-            <div class="alert-auto-hide p-4 bg-red-500 text-white rounded-2xl font-bold shadow-lg flex items-center gap-3">
-                <span class="text-xl">⚠️</span>
-                {{ session('error') }}
+            {{-- Tambahkan ini di area notifikasi dashboard.blade.php --}}
+            @if(session('warning'))
+            <div class="alert-auto-hide p-4 bg-orange-500 text-white rounded-2xl font-bold shadow-lg flex items-center gap-3">
+                <span>⚠️</span>
+                {{ session('warning') }}
             </div>
+            @endif
+
+            {{-- Ganti bagian foreach kamu jadi seperti ini --}}
+            @if(isset($locationWarnings))
+            @foreach($locationWarnings as $warning)
+            <div class="flex justify-between items-center p-3 bg-white/50 rounded-xl mb-2 border-l-4 border-red-500">
+                <span class="font-bold text-red-700 uppercase text-xs">{{ $warning->user->name }} absen di luar jangkauan!</span>
+                <form action="{{ route('hr.attendance.confirm', $warning->id) }}" method="POST">
+                    @csrf
+                    <button type="submit" class="text-[10px] font-black bg-red-600 text-white px-4 py-1.5 rounded-lg hover:bg-black transition">
+                        KONFIRMASI
+                    </button>
+                </form>
+            </div>
+            @endforeach
             @endif
 
             {{-- BLOK PERINGATAN AI/HR (DARI KODE BARU ANDA) --}}
@@ -50,9 +66,9 @@
             <div class="flex items-center gap-4 z-10">
                 <div class="relative">
                     <h1 class="text-2xl font-black text-gray-800">
-                        Halo, {{ Auth::user()->name }}! 👋
+                        Halo, {{ Auth::user()->name }}! 
                         @if(auth()->user()->has_warning)
-                        <span class="text-red-500 animate-bounce inline-block">🔴</span>
+                        <span class="text-red-500 animate-bounce inline-block"></span>
                         @endif
                     </h1>
                 </div>
@@ -71,16 +87,16 @@
                     <p id="live-clock-big" class="text-5xl font-black text-gray-800 tracking-tighter">00:00:00</p>
                 </div>
                 <div class="flex flex-wrap justify-center gap-4">
-                    <form action="{{ route('absen.masuk') }}" method="POST">
+                    <form id="form-absen" action="{{ route('absen.masuk') }}" method="POST">
                         @csrf
                         {{-- Menambahkan data lokasi dummy atau bisa diintegrasikan dengan geolocation script --}}
                         <input type="hidden" name="lat" id="lat">
                         <input type="hidden" name="long" id="long">
-                        <button type="submit" onclick="getLocation()" class="px-10 py-5 bg-green-500 text-white rounded-2xl font-black hover:bg-green-600 shadow-xl shadow-green-100 transition active:scale-95 uppercase tracking-widest">
+                        <button type="button" onclick="ambilLokasiDanAbsen()" class="px-10 py-5 bg-green-500 text-white rounded-2xl font-black hover:bg-green-600 shadow-xl shadow-green-100 transition active:scale-95 uppercase tracking-widest">
                             MASUK
                         </button>
                     </form>
-                    <form action="{{ route('absen.pulang') }}" method="POST">
+                    <form id="form-absen" action="{{ route('absen.pulang') }}" method="POST">
                         @csrf
                         <button type="submit" class="px-10 py-5 bg-orange-500 text-white rounded-2xl font-black hover:bg-orange-600 shadow-xl shadow-orange-100 transition active:scale-95 uppercase tracking-widest">
                             PULANG
@@ -147,11 +163,21 @@
         }, 4000);
 
         // 3. Script Geolocation (Penting untuk backend route absen.masuk)
-        function getLocation() {
+        function ambilLokasiDanAbsen() {
+            console.log("Tombol diklik, sedang mencari lokasi..."); // Pesan ini akan muncul di Inspect Element
+
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
+                    console.log("Lokasi ditemukan!", position.coords.latitude, position.coords.longitude);
+
                     document.getElementById('lat').value = position.coords.latitude;
                     document.getElementById('long').value = position.coords.longitude;
+
+                    // Kirim form
+                    document.getElementById('form-absen').submit();
+                }, function(error) {
+                    console.error("Gagal ambil lokasi:", error.message);
+                    alert("Error: " + error.message);
                 });
             }
         }

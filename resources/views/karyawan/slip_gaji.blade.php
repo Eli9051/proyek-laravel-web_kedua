@@ -22,6 +22,10 @@
                     </div>
                     <p class="text-gray-500 text-sm font-medium">Gaji Pokok Utama</p>
                     <p class="text-2xl font-black text-gray-800">Rp {{ number_format($user->basic_salary, 0, ',', '.') }}</p>
+                    <tr class="border-b">
+                        <td class="py-2">Lembur ({{ number_format($totalHours, 1) }} Jam)</td>
+                        <td class="py-2 text-right text-green-600 font-bold">+ Rp {{ number_format($overtimePay, 0, ',', '.') }}</td>
+                    </tr>
                 </div>
 
                 <div class="bg-red-50/50 p-6 rounded-3xl border border-red-100">
@@ -31,7 +35,7 @@
                         </div>
                         <span class="text-xs font-bold text-red-500 uppercase tracking-widest">Potongan Disiplin</span>
                     </div>
-                    
+
                     <div class="space-y-4">
                         <div class="flex justify-between items-center">
                             <span class="text-sm text-gray-600 font-medium">Keterlambatan ({{ $lateCount }}x)</span>
@@ -51,13 +55,13 @@
 
             <div class="bg-slate-900 rounded-3xl p-8 text-white flex flex-col justify-center relative overflow-hidden shadow-2xl">
                 <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full"></div>
-                
+
                 <div class="relative">
                     <p class="text-slate-400 font-bold uppercase tracking-widest text-xs mb-2">Total Gaji Diterima (Take Home Pay)</p>
                     <h4 class="text-4xl font-black tracking-tight mb-8">
                         Rp {{ number_format($netSalary, 0, ',', '.') }}
                     </h4>
-                    
+
                     <div class="bg-white/10 p-4 rounded-2xl backdrop-blur-sm">
                         <p class="text-[10px] text-slate-300 uppercase font-bold mb-1 tracking-widest">Status Pembayaran</p>
                         <div class="flex items-center gap-2">
@@ -68,7 +72,7 @@
                 </div>
             </div>
         </div>
-        
+
         <p class="text-center text-gray-400 text-[10px] mt-12 font-medium italic">
             *Slip ini dihasilkan secara otomatis oleh sistem MyAbsensi AI. Hubungi HR jika terdapat ketidaksesuaian data.
         </p>

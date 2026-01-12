@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\Auth;
 
 class AttendanceController extends Controller
 {
-    // Koordinat Kantor (Sesuaikan dengan koordinat kantor Anda)
-    const OFFICE_LAT = -6.200000; 
-    const OFFICE_LONG = 106.816666;
+    // Koordinat Kantor -6.175094962126099, 106.82747537628946
+    const OFFICE_LAT = -6.175094962126099;
+    const OFFICE_LONG = 106.82747537628946;
     const MAX_RADIUS_KM = 0.1; // 100 Meter
 
     public function checkIn(Request $request)
@@ -24,8 +24,8 @@ class AttendanceController extends Controller
         $earthRadius = 6371;
         $dLat = deg2rad($userLat - self::OFFICE_LAT);
         $dLon = deg2rad($userLong - self::OFFICE_LONG);
-        $a = sin($dLat/2) * sin($dLat/2) + cos(deg2rad(self::OFFICE_LAT)) * cos(deg2rad($userLat)) * sin($dLon/2) * sin($dLon/2);
-        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+        $a = sin($dLat / 2) * sin($dLat / 2) + cos(deg2rad(self::OFFICE_LAT)) * cos(deg2rad($userLat)) * sin($dLon / 2) * sin($dLon / 2);
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
         $distance = $earthRadius * $c;
 
         $isOutside = $distance > self::MAX_RADIUS_KM;
@@ -41,10 +41,21 @@ class AttendanceController extends Controller
             'status' => $isOutside ? 'Luar Kantor' : 'Hadir'
         ]);
 
-        $message = $isOutside 
-            ? 'Absen berhasil, namun Anda berada di luar jangkauan kantor. HRD telah dinotifikasi.' 
+        $message = $isOutside
+            ? 'Absen berhasil, namun Anda berada di luar jangkauan kantor. HRD telah dinotifikasi.'
             : 'Berhasil! Lokasi Anda tervalidasi di area kantor.';
 
         return back()->with($isOutside ? 'warning' : 'success', $message);
+    }
+
+    public function indexHR()
+    {
+        // Mengambil semua yang absen di luar kantor
+        $pelanggaran = Attendance::with('user')
+            ->where('is_outside', true)
+            ->latest()
+            ->paginate(15);
+
+        return view('hr.attendance-index', compact('pelanggaran'));
     }
 } // Pastikan penutup ini ada di baris 47

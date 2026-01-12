@@ -1,9 +1,10 @@
 <x-guest-layout>
-    <div class="fixed inset-0 min-h-screen w-full flex flex-col md:flex-row bg-white overflow-hidden">
+    <div class="fixed inset-0 w-full flex flex-col lg:flex-row bg-white overflow-y-auto">
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
         <style>
+            
             body { font-family: 'Plus Jakarta Sans', sans-serif; }
             .swiper-slide { background-position: center; background-size: cover; }
             
@@ -17,7 +18,7 @@
             }
         </style>
 
-        <div class="hidden md:block w-1/2 relative overflow-hidden">
+        <div class="hidden lg:block lg:w-1/2 relative overflow-hidden">
             <div class="swiper mySwiper h-full w-full">
                 <div class="swiper-wrapper">
                     <div class="swiper-slide" style="background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop')">
@@ -41,8 +42,8 @@
             </div>
         </div>
 
-        <div class="w-full md:w-1/2 flex items-center justify-center p-8 md:p-16 bg-gray-50 overflow-y-auto">
-            <div class="w-full max-w-md bg-white p-10 rounded-3xl shadow-2xl shadow-blue-100 border border-gray-100">
+        <div class="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 lg:p-16 bg-gray-50 overflow-y-auto">
+            <div class="hidden lg:block lg:w-1/2 relative overflow-hidden h-full">
                 
                 <div class="text-center mb-8">
                     <div class="inline-flex p-3 bg-blue-50 rounded-2xl mb-4">

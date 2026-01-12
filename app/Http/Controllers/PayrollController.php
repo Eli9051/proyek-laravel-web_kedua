@@ -4,67 +4,97 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Attendance;
+use App\Models\Overtime;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-
+use Carbon\Carbon;
 
 class PayrollController extends Controller
 {
-	// app/Http/Controllers/PayrollController.php
+    /**
+     * Menampilkan daftar karyawan untuk diproses payroll oleh HR.
+     */
+    public function index()
+    {
+        $employees = User::where('role', 'karyawan')
+            ->with(['attendances' => function ($query) {
+                $query->whereMonth('date', now()->month);
+            }])->get();
 
-	// app/Http/Controllers/PayrollController.php
+        return view('hr.payroll_index', compact('employees'));
+    }
 
-	public function index()
-	{
-		$employees = User::where('role', 'karyawan')
-			->with(['attendances' => function ($query) {
-				// Gunakan kolom 'date' sesuai dengan struktur database Anda
-				$query->whereMonth('date', now()->month);
-			}])->get();
+    /**
+     * Memproses gaji karyawan termasuk hitungan lembur, keterlambatan, dan denda.
+     */
+    public function process($id)
+    {
+        $user = User::findOrFail($id);
+        $month = now()->month;
+        $year = now()->year;
 
-		// Pastikan pemanggilan view sesuai dengan folder: hr -> employees -> payroll_index
-		return view('hr.payroll_index', compact('employees'));
-	}
+        // 1. Hitung Lembur (Hanya yang berstatus 'approved')
+        $approvedOvertimes = Overtime::where('user_id', $user->id)
+            ->where('status', 'approved')
+            ->whereMonth('date', $month)
+            ->whereYear('date', $year)
+            ->get();
 
-	public function process($id)
-	{
-		$user = \App\Models\User::findOrFail($id);
+        $totalOvertimeHours = 0;
+        foreach ($approvedOvertimes as $ot) {
+            $start = Carbon::parse($ot->start_time);
+            $end = Carbon::parse($ot->end_time);
+            $totalOvertimeHours += $start->diffInMinutes($end) / 60;
+        }
 
-		// Logika perhitungan keterlambatan
-		$lateCount = \App\Models\Attendance::where('user_id', $user->id)
-			->whereMonth('date', now()->month)
-			->where('check_in', '>', '08:00:00')
-			->count();
+        // Rumus Upah Lembur (Gaji Pokok / 173)
+        $overtimeRate = $user->basic_salary / 173;
+        $overtimePay = $totalOvertimeHours * $overtimeRate;
 
-		$latePenalty = $lateCount * 25000;
+        // 2. Hitung Potongan Keterlambatan (> 08:00:00)
+        $lateCount = Attendance::where('user_id', $user->id)
+            ->whereMonth('date', $month)
+            ->where('check_in', '>', '08:00:00')
+            ->count();
+        $latePenalty = $lateCount * 25000;
 
-		// Potongan Disiplin (Warning)
-		$warningPenalty = $user->has_warning ? ($user->basic_salary * 0.1) : 0;
+        // 3. Potongan Disiplin (Jika ada warning)
+        $warningPenalty = $user->has_warning ? ($user->basic_salary * 0.1) : 0;
 
-		$totalPenalty = $latePenalty + $warningPenalty;
-		$netSalary = $user->basic_salary - $totalPenalty;
+        // 4. Kalkulasi Gaji Bersih
+        $netSalary = ($user->basic_salary + $overtimePay) - ($latePenalty + $warningPenalty);
 
-		// PASTIKAN BARIS INI ADA: Mengembalikan ke halaman sebelumnya dengan pesan
-		return redirect()->back()->with('success', "Payroll {$user->name} berhasil dihitung. Gaji Bersih: Rp " . number_format($netSalary, 0, ',', '.'));
-	}
+        return redirect()->back()->with('success', 
+            "Payroll {$user->name} berhasil dihitung! Lembur: " . number_format($totalOvertimeHours, 1) . 
+            " Jam (Rp " . number_format($overtimePay, 0, ',', '.') . "). Gaji Bersih: Rp " . number_format($netSalary, 0, ',', '.')
+        );
+    }
 
-	public function mySlip()
-	{
-		$user = \Illuminate\Support\Facades\Auth::user();
+    /**
+     * Menampilkan slip gaji untuk sisi karyawan.
+     */
+    public function mySlip()
+    {
+        $user = auth()->user();
+        $month = now()->month;
 
-		// Kita hitung telat berdasarkan waktu check_in > 08:00:00 (Sesuai logika dashboard HR kamu)
-		$lateCount = \App\Models\Attendance::where('user_id', $user->id)
-			->whereMonth('date', now()->month) // Gunakan kolom 'date' sesuai migrasi kamu
-			->where('check_in', '>', '08:00:00')
-			->count();
+        // Hitung ulang data untuk tampilan slip
+        $overtimes = Overtime::where('user_id', $user->id)
+            ->where('status', 'approved')
+            ->whereMonth('date', $month)
+            ->get();
 
-		$latePenalty = $lateCount * 25000;
+        $totalHours = 0;
+        foreach ($overtimes as $ot) {
+            $totalHours += Carbon::parse($ot->start_time)->diffInMinutes(Carbon::parse($ot->end_time)) / 60;
+        }
 
-		// Potongan Warning (Sinkron dengan has_warning)
-		$warningPenalty = $user->has_warning ? ($user->basic_salary * 0.1) : 0;
+        $overtimePay = $totalHours * ($user->basic_salary / 173);
+        $lateCount = Attendance::where('user_id', $user->id)->whereMonth('date', $month)->where('check_in', '>', '08:00:00')->count();
+        $latePenalty = $lateCount * 25000;
+        $warningPenalty = $user->has_warning ? ($user->basic_salary * 0.1) : 0;
+        
+        $netSalary = ($user->basic_salary + $overtimePay) - ($latePenalty + $warningPenalty);
 
-		$netSalary = $user->basic_salary - ($latePenalty + $warningPenalty);
-
-		return view('karyawan.slip_gaji', compact('user', 'lateCount', 'latePenalty', 'warningPenalty', 'netSalary'));
-	}
+        return view('karyawan.slip_gaji', compact('user', 'totalHours', 'overtimePay', 'lateCount', 'latePenalty', 'warningPenalty', 'netSalary'));
+    }
 }

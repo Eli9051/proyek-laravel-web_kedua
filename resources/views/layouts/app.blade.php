@@ -48,11 +48,7 @@
             </div>
 
             <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-                {{-- Dashboard Utama --}}
-                <a href="{{ route('dashboard') }}" class="flex items-center gap-4 p-3 {{ request()->routeIs('dashboard') ? 'bg-[#0090e7] text-white shadow-lg' : 'hover:bg-gray-800' }} rounded-xl transition-all font-semibold mb-2">
-                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                    <span x-show="sidebarOpen">Dashboard</span>
-                </a>
+
 
                 {{-- MENU KHUSUS HR --}}
                 @if(Auth::check() && strtolower(Auth::user()->role) === 'hr')
@@ -76,6 +72,28 @@
                     <span class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">{{ $count }}</span>
                     @endif
                 </a>
+                {{-- Menu Riwayat Absensi khusus HR dengan Badge --}}
+                <a href="{{ route('hr.attendance.index') }}" class="flex items-center gap-4 p-3 {{ request()->routeIs('hr.attendance.*') ? 'bg-[#0090e7] text-white' : 'hover:bg-gray-800' }} rounded-xl transition-all font-medium relative">
+                    <i data-lucide="shield-alert" class="w-5 h-5 text-red-400"></i>
+                    <span x-show="sidebarOpen">Pelanggaran Lokasi</span>
+
+                    {{-- LOGIKA ANGKA NOTIFIKASI --}}
+                    @php
+                    $jumlahPelanggaran = \App\Models\Attendance::where('is_outside', true)
+                    ->where('hr_reviewed', false)
+                    ->count();
+                    @endphp
+
+                    @if($jumlahPelanggaran > 0)
+                    <span class="absolute right-2 top-2 bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full font-black animate-bounce shadow-lg">
+                        {{ $jumlahPelanggaran }}
+                    </span>
+                    @endif
+                </a>
+                <a href="{{ route('kpi.index') }}" class="flex items-center gap-4 p-3 hover:bg-gray-800 rounded-xl transition-all font-medium">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5 text-red-400"></i>
+                    <span x-show="sidebarOpen">Performa KPI</span>
+                </a>
 
                 <a href="{{ route('hr.announcements.index') }}" class="flex items-center gap-4 p-3 {{ request()->routeIs('hr.announcements.*') ? 'bg-[#0090e7] text-white' : 'hover:bg-gray-800' }} rounded-xl transition-all font-medium">
                     <i data-lucide="megaphone" class="w-5 h-5 text-pink-400"></i>
@@ -86,27 +104,65 @@
                 {{-- MENU SAYA (KARYAWAN) --}}
                 <div class="pt-4 pb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest px-4" x-show="sidebarOpen">Menu Saya</div>
 
+
+
+                {{-- Menu Dashboard (Tetap Ada) --}}
+                <a href="{{ route('dashboard') }}" class="flex items-center gap-4 p-3 {{ request()->routeIs('dashboard') ? 'bg-[#0090e7] text-white' : 'hover:bg-gray-800' }} rounded-xl transition-all font-medium">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5 {{ request()->routeIs('dashboard') ? 'text-white' : 'text-blue-400' }}"></i>
+                    <span x-show="sidebarOpen">Dashboard</span>
+                </a>
+
+                {{-- Menu Slip Gaji --}}
                 <a href="{{ route('karyawan.slip') }}" class="flex items-center gap-4 p-3 {{ request()->routeIs('karyawan.slip') ? 'bg-[#0090e7] text-white' : 'hover:bg-gray-800' }} rounded-xl transition-all font-medium">
-                    <i data-lucide="file-text" class="w-5 h-5 text-yellow-400"></i>
+                    <i data-lucide="file-text" class="w-5 h-5 {{ request()->routeIs('karyawan.slip') ? 'text-white' : 'text-yellow-400' }}"></i>
                     <span x-show="sidebarOpen">Slip Gaji</span>
                 </a>
 
+                {{-- Menu Ajukan Cuti --}}
                 <a href="{{ route('cuti.ajukan') }}" class="flex items-center gap-4 p-3 {{ request()->routeIs('cuti.ajukan') ? 'bg-[#0090e7] text-white' : 'hover:bg-gray-800' }} rounded-xl transition-all font-medium">
-                    <i data-lucide="calendar-days" class="w-5 h-5 text-purple-400"></i>
+                    <i data-lucide="calendar-days" class="w-5 h-5 {{ request()->routeIs('cuti.ajukan') ? 'text-white' : 'text-purple-400' }}"></i>
                     <span x-show="sidebarOpen">Ajukan Cuti</span>
                 </a>
 
-                {{-- LAYANAN UMUM --}}
-                <div class="pt-4 pb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest px-4" x-show="sidebarOpen">Layanan</div>
 
-                <a href="{{ route('events.index') }}" class="flex items-center gap-4 p-3 {{ request()->routeIs('events.*') ? 'bg-[#0090e7] text-white' : 'hover:bg-gray-800' }} rounded-xl transition-all font-medium">
-                    <i data-lucide="calendar-range" class="w-5 h-5 text-teal-400"></i>
-                    <span x-show="sidebarOpen">Kalender Event</span>
-                </a>
 
                 <a href="{{ route('documents.index') }}" class="flex items-center gap-4 p-3 {{ request()->routeIs('documents.*') ? 'bg-[#0090e7] text-white' : 'hover:bg-gray-800' }} rounded-xl transition-all font-medium">
                     <i data-lucide="book-open" class="w-5 h-5 text-indigo-400"></i>
                     <span x-show="sidebarOpen">Dokumen SOP</span>
+                </a>
+
+                {{-- Menu Profil Saya --}}
+                <a href="{{ route('profile.show') }}" class="flex items-center gap-4 p-3 {{ request()->routeIs('profile.*') ? 'bg-[#0090e7] text-white' : 'hover:bg-gray-800' }} rounded-xl transition-all font-medium">
+                    <i data-lucide="user-circle" class="w-5 h-5 {{ request()->routeIs('profile.*') ? 'text-white' : 'text-orange-400' }}"></i>
+                    <span x-show="sidebarOpen">Profil Saya</span>
+                </a>
+
+                {{-- Menu Riwayat Absensi --}}
+                <a href="{{ route('karyawan.riwayat') }}" class="flex items-center gap-4 p-3 {{ request()->routeIs('karyawan.riwayat') ? 'bg-[#0090e7] text-white' : 'hover:bg-gray-800' }} rounded-xl transition-all font-medium">
+                    <i data-lucide="history" class="w-5 h-5 {{ request()->routeIs('karyawan.riwayat') ? 'text-white' : 'text-indigo-400' }}"></i>
+                    <span x-show="sidebarOpen">Riwayat Absensi</span>
+                </a>
+
+
+
+                {{-- LAYANAN TAMBAHAN --}}
+                <div class="pt-4 pb-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest px-4" x-show="sidebarOpen">Fasilitas</div>
+
+                <a href="{{ route('overtimes.index') }}" class="flex items-center gap-4 p-3 hover:bg-gray-800 rounded-xl transition-all font-medium">
+                    <i data-lucide="clock-alert" class="w-5 h-5 text-orange-400"></i>
+                    <span x-show="sidebarOpen">Lembur</span>
+                </a>
+
+                <a href="{{ route('inventories.index') }}" class="flex items-center gap-4 p-3 hover:bg-gray-800 rounded-xl transition-all font-medium">
+                    <i data-lucide="package" class="w-5 h-5 text-blue-300"></i>
+                    <span x-show="sidebarOpen">Inventaris</span>
+                </a>
+
+
+
+                <a href="#" class="flex items-center gap-4 p-3 hover:bg-gray-800 rounded-xl transition-all font-medium">
+                    <i data-lucide="help-circle" class="w-5 h-5 text-gray-400"></i>
+                    <span x-show="sidebarOpen">Bantuan</span>
                 </a>
             </nav>
 
@@ -121,6 +177,17 @@
                 </form>
             </div>
         </aside>
+        {{-- Overlay untuk HP --}}
+        <div x-show="sidebarOpen"
+            @click="sidebarOpen = false"
+            class="fixed inset-0 bg-black/50 z-40 md:hidden"
+            x-transition:enter="transition opacity-ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition opacity-ease-in duration-300"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0">
+        </div>
 
         {{-- MAIN CONTENT AREA --}}
         <div class="flex-1 flex flex-col transition-all duration-300" :class="sidebarOpen ? 'md:ml-64' : 'md:ml-20'">
